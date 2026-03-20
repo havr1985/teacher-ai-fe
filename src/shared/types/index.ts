@@ -33,6 +33,17 @@ export interface RegisterDto {
   lastName: string;
 }
 
+// ─── Subjects ─────────────────────────────────────────────────────────────────
+export interface Subject {
+  id: string;
+  name: string;
+  nameShort: string;
+  area: {
+    id: string;
+    name: string;
+  };
+}
+
 // ─── Classes ──────────────────────────────────────────────────────────────────
 export type ClassLevel = 'standard' | 'advanced' | 'support';
 
@@ -49,6 +60,81 @@ export interface ClassEntity {
     nameShort: string;
   };
   createdAt: string;
+}
+
+export interface CreateClassDto {
+  name: string;
+  grade: number;
+  subjectId: string;
+  academicYear: string;
+  level: ClassLevel;
+  teacherNotes?: string | null;
+}
+
+export interface UpdateClassDto {
+  name?: string;
+  grade?: number;
+  subjectId?: string;
+  academicYear?: string;
+  level?: ClassLevel;
+  teacherNotes?: string | null;
+}
+
+// ─── Covered Topics ──────────────────────────────────────────────────────────
+export type TopicSource = 'generated' | 'manual';
+
+export interface CoveredTopic {
+  id: string;
+  topic: string;
+  source: TopicSource;
+  sourceId: string | null;
+  coveredAt: string;
+}
+
+export interface CreateTopicDto {
+  topic: string;
+  coveredAt: string;
+}
+
+// ─── Lesson Plans ─────────────────────────────────────────────────────────────
+export interface LessonStage {
+  name: string;
+  duration_minutes: number;
+  description: string;
+  activities: string[];
+  teacher_actions: string[];
+}
+
+export interface LessonPlanContent {
+  subject: string;
+  class: string;
+  topic: string;
+  duration_minutes: number;
+  objectives: string[];
+  outcome_groups: string[];
+  equipment: string[];
+  stages: LessonStage[];
+  homework: string;
+  teacher_notes?: string;
+}
+
+export interface LessonPlan {
+  id: string;
+  topic: string;
+  durationMinutes: number;
+  content: LessonPlanContent;
+  tokensUsed: number;
+  cachedAt: string | null;
+  createdAt: string;
+  subject: Subject;
+  classEntity: ClassEntity;
+}
+
+export interface GenerateLessonPlanDto {
+  classId: string;
+  subjectId: string;
+  topic: string;
+  durationMinutes: number;
 }
 
 // ─── Outcome Groups ────────────────────────────────────────────────────────────
@@ -109,17 +195,6 @@ export interface CompetencyWork {
   cachedAt: string | null;
   createdAt: string;
   classEntity: ClassEntity;
-}
-
-// ─── Lesson Plans ─────────────────────────────────────────────────────────────
-export interface LessonPlan {
-  id: string;
-  topic: string;
-  durationMinutes: number;
-  content: Record<string, unknown>;
-  tokensUsed: number;
-  cachedAt: string | null;
-  createdAt: string;
 }
 
 // ─── Pagination ───────────────────────────────────────────────────────────────
