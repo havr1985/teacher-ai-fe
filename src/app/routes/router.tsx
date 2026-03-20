@@ -1,12 +1,13 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { lazy } from 'react';
 import { AppLayout } from '../../shared/components/layout/AppLayout';
-import { Suspense, lazy } from 'react';
-import { Spinner } from '../../shared/components/ui/Spinner';
 import { AuthLayout } from '../../features/auth/components/AuthLayout';
 import { ProtectedRoute } from './ProtectedRoute';
 import { GuestRoute } from './GuestRoute';
+import { SuspenseWrap } from './SuspenseWrap';
 
 // ─── Lazy imports ──────────────────────────────────────────────────────────────
+/* eslint-disable react-refresh/only-export-components */
 const LoginPage = lazy(() => import('../../features/auth/pages/LoginPage'));
 const RegisterPage = lazy(
   () => import('../../features/auth/pages/RegisterPage'),
@@ -29,20 +30,17 @@ const GenerateLessonPlanPage = lazy(
 const LessonPlanDetailPage = lazy(
   () => import('../../features/lesson-plans/pages/LessonPlanDetailPage'),
 );
-
-function SuspenseWrap({ children }: { children: React.ReactNode }) {
-  return (
-    <Suspense
-      fallback={
-        <div className="flex items-center justify-center py-20">
-          <Spinner size={28} />
-        </div>
-      }
-    >
-      {children}
-    </Suspense>
-  );
-}
+const CompetencyWorksPage = lazy(
+  () => import('../../features/competency-works/pages/CompetencyWorksPage'),
+);
+const GenerateCompetencyWorkPage = lazy(
+  () =>
+    import('../../features/competency-works/pages/GenerateCompetencyWorkPage'),
+);
+const CompetencyWorkDetailPage = lazy(
+  () =>
+    import('../../features/competency-works/pages/CompetencyWorkDetailPage'),
+);
 
 export const router = createBrowserRouter([
   // ─── Auth (guest only) ───────────────────────────────────────────────
@@ -108,7 +106,7 @@ export const router = createBrowserRouter([
           </SuspenseWrap>
         ),
       },
-      // Lesson Plans
+      // Lesson Plans — generate BEFORE :id
       {
         path: 'lesson-plans',
         element: (
@@ -130,6 +128,31 @@ export const router = createBrowserRouter([
         element: (
           <SuspenseWrap>
             <LessonPlanDetailPage />
+          </SuspenseWrap>
+        ),
+      },
+      // Competency Works — generate BEFORE :id
+      {
+        path: 'competency-works',
+        element: (
+          <SuspenseWrap>
+            <CompetencyWorksPage />
+          </SuspenseWrap>
+        ),
+      },
+      {
+        path: 'competency-works/generate',
+        element: (
+          <SuspenseWrap>
+            <GenerateCompetencyWorkPage />
+          </SuspenseWrap>
+        ),
+      },
+      {
+        path: 'competency-works/:id',
+        element: (
+          <SuspenseWrap>
+            <CompetencyWorkDetailPage />
           </SuspenseWrap>
         ),
       },

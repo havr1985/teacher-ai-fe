@@ -19,23 +19,90 @@ api.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
-// On 401 — clear state and redirect.
-// IMPORTANT: skip /auth/refresh — AuthInitializer handles that failure itself.
-// Without this check, page reload triggers: refresh → 401 → logout → redirect,
-// even though the refresh cookie might be valid.
+// ─── Silent refresh on 401 ────────────────────────────────────────────────────
+// When access token expires mid-session:
+//   1) Try POST /auth/refresh (httpOnly cookie sends automatically)
+//   2) If success → store new token → retry original request
+//   3) If fail → logout + redirect
+//   4) If multiple requests 401 at once → only one refresh, others wait
+
+let isRefreshing = false;
+let pendingQueue: Array<{
+  resolve: (token: string) => void;
+  reject: (err: unknown) => void;
+}> = [];
+
+function processQueue(token: string | null, error: unknown = null) {
+  pendingQueue.forEach(({ resolve, reject }) => {
+    if (token) resolve(token);
+    else reject(error);
+  });
+  pendingQueue = [];
+}
+
 api.interceptors.response.use(
   (response) => response,
-  (error: AxiosError) => {
-    const url = error.config?.url ?? '';
-    const isRefresh = url.includes('/auth/refresh');
+  async (error: AxiosError) => {
+    const originalRequest = error.config as InternalAxiosRequestConfig & {
+      _retry?: boolean;
+    };
 
-    if (error.response?.status === 401 && !isRefresh) {
+    // Skip refresh attempts and already-retried requests
+    const url = originalRequest?.url ?? '';
+    const isRefreshUrl = url.includes('/auth/refresh');
+
+    if (
+      error.response?.status !== 401 ||
+      isRefreshUrl ||
+      originalRequest._retry
+    ) {
+      // Non-401 or refresh itself failed → reject as-is
+      if (error.response?.status === 401 && isRefreshUrl) {
+        useAuthStore.getState().logout();
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
+      }
+      return Promise.reject(error);
+    }
+
+    // 401 on a normal request → try silent refresh
+    if (isRefreshing) {
+      // Another refresh is in progress — wait for it
+      return new Promise((resolve, reject) => {
+        pendingQueue.push({
+          resolve: (token: string) => {
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+            originalRequest._retry = true;
+            resolve(api(originalRequest));
+          },
+          reject: (err: unknown) => reject(err),
+        });
+      });
+    }
+
+    isRefreshing = true;
+    originalRequest._retry = true;
+
+    try {
+      const res = await api.post('/auth/refresh');
+      const { accessToken } = res.data.data;
+
+      useAuthStore.getState().setToken(accessToken);
+      processQueue(accessToken);
+
+      originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+      return api(originalRequest);
+    } catch (refreshError) {
+      processQueue(null, refreshError);
       useAuthStore.getState().logout();
       if (window.location.pathname !== '/login') {
         window.location.href = '/login';
       }
+      return Promise.reject(refreshError);
+    } finally {
+      isRefreshing = false;
     }
-    return Promise.reject(error);
   },
 );
 

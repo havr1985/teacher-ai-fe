@@ -148,7 +148,45 @@ export interface OutcomeGroup {
 }
 
 // ─── Competency Works ─────────────────────────────────────────────────────────
-export type OutcomeGroupEnum = 'gr1' | 'gr2' | 'gr3';
+// Backend enum values have hyphens: 'gr-1', 'gr-2', 'gr-3'
+export type OutcomeGroupEnum = 'gr-1' | 'gr-2' | 'gr-3';
+
+export const OUTCOME_GROUP_LABELS: Record<OutcomeGroupEnum, string> = {
+  'gr-1': 'ГР-1 — Досліджує природу',
+  'gr-2': 'ГР-2 — Опрацьовує інформацію',
+  'gr-3': 'ГР-3 — Усвідомлює закономірності',
+};
+
+export const OUTCOME_GROUP_SHORT: Record<OutcomeGroupEnum, string> = {
+  'gr-1': 'ГР-1',
+  'gr-2': 'ГР-2',
+  'gr-3': 'ГР-3',
+};
+
+// suggest-gr response from Claude
+export interface SuggestGrResponse {
+  suggested: OutcomeGroupEnum;
+  reasoning: string;
+  alternative?: OutcomeGroupEnum;
+  alternative_reasoning?: string;
+}
+
+export interface SuggestGrDto {
+  classId: string;
+  subjectId: string;
+  topic: string;
+}
+
+export interface GenerateCompetencyWorkDto {
+  classId: string;
+  subjectId: string;
+  topic: string;
+  outcomeGroup: OutcomeGroupEnum;
+  level1Count: number;
+  level2Count: number;
+  level3Count: number;
+  forceNew?: boolean;
+}
 
 export interface CompetencyWorkTaskOpen {
   number: number;
@@ -194,13 +232,8 @@ export interface CompetencyWork {
   tokensUsed: number;
   cachedAt: string | null;
   createdAt: string;
-  classEntity: ClassEntity;
-}
-
-// ─── Pagination ───────────────────────────────────────────────────────────────
-export interface PaginatedResponse<T> {
-  items: T[];
-  total: number;
-  page: number;
-  limit: number;
+  fromCache?: boolean;
+  // Backend entity relation is `class`, not `classEntity`
+  class?: ClassEntity;
+  subject?: Subject;
 }
