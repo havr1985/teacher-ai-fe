@@ -13,14 +13,12 @@ interface CompetencyWorksListResponse {
 }
 
 export const competencyWorksApi = {
-  // Step 1: Claude suggests ГР (no balance deduction)
   suggestGr: (dto: SuggestGrDto) =>
     api.post<ApiResponse<SuggestGrResponse>>(
       '/competency-works/suggest-gr',
       dto,
     ),
 
-  // Step 2: Generate work (deducts balance unless cached)
   generate: (dto: GenerateCompetencyWorkDto) =>
     api.post<ApiResponse<CompetencyWork>>('/competency-works/generate', dto),
 

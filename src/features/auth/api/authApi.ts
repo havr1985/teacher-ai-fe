@@ -15,4 +15,8 @@ export const authApi = {
   logout: () => api.post<ApiResponse<null>>('/auth/logout'),
   refresh: () => api.post<ApiResponse<AuthResponse>>('/auth/refresh'),
   me: () => api.get<ApiResponse<User>>('/users/me'),
+  verifyEmail: (token: string) =>
+    api.post<ApiResponse<{ message: string }>>('auth/verify-email', { token }),
+  resendVerification: () =>
+    api.post<ApiResponse<{ message: string }>>('auth/resend-verification'),
 };

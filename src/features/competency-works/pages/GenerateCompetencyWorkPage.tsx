@@ -125,7 +125,7 @@ export default function GenerateCompetencyWorkPage() {
 
   // ─── Step 3: Generate ───────────────────────────────────────────────
 
-  const handleGenerate = async (forceNew = false) => {
+  const handleGenerate = async () => {
     if (!selectedClass || !selectedGr) return;
 
     setError(null);
@@ -138,7 +138,6 @@ export default function GenerateCompetencyWorkPage() {
         topic: topic.trim(),
         outcomeGroup: selectedGr,
         ...taskCounts,
-        forceNew,
       });
       const work = res.data.data;
 
@@ -284,7 +283,7 @@ export default function GenerateCompetencyWorkPage() {
               <TaskCountsForm value={taskCounts} onChange={setTaskCounts} />
 
               <Button
-                onClick={() => handleGenerate(false)}
+                onClick={handleGenerate}
                 fullWidth
                 loading={step === 'generating'}
               >

@@ -14,7 +14,6 @@ export function CompetencyWorkCard({ work }: CompetencyWorkCardProps) {
     year: 'numeric',
   });
 
-  const isCached = !!work.cachedAt;
   const grLabel = OUTCOME_GROUP_SHORT[work.outcomeGroup] ?? work.outcomeGroup;
 
   return (
@@ -30,7 +29,6 @@ export function CompetencyWorkCard({ work }: CompetencyWorkCardProps) {
           </p>
           <p className="text-[13px] text-chalk-muted">
             {work.class?.name} · {grLabel} · {date}
-            {isCached && ' · ⚡'}
           </p>
         </div>
 

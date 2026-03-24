@@ -12,6 +12,8 @@ export interface User {
   firstName: string;
   lastName: string;
   generationsBalance: number;
+  isVerified: boolean;
+  role?: 'user' | 'admin';
   createdAt: string;
 }
 
@@ -148,7 +150,6 @@ export interface OutcomeGroup {
 }
 
 // ─── Competency Works ─────────────────────────────────────────────────────────
-// Backend enum values have hyphens: 'gr-1', 'gr-2', 'gr-3'
 export type OutcomeGroupEnum = 'gr-1' | 'gr-2' | 'gr-3';
 
 export const OUTCOME_GROUP_LABELS: Record<OutcomeGroupEnum, string> = {
@@ -163,7 +164,6 @@ export const OUTCOME_GROUP_SHORT: Record<OutcomeGroupEnum, string> = {
   'gr-3': 'ГР-3',
 };
 
-// suggest-gr response from Claude
 export interface SuggestGrResponse {
   suggested: OutcomeGroupEnum;
   reasoning: string;
@@ -233,7 +233,14 @@ export interface CompetencyWork {
   cachedAt: string | null;
   createdAt: string;
   fromCache?: boolean;
-  // Backend entity relation is `class`, not `classEntity`
   class?: ClassEntity;
   subject?: Subject;
+}
+
+// ─── Pagination ───────────────────────────────────────────────────────────────
+export interface PaginatedResponse<T> {
+  items: T[];
+  total: number;
+  page: number;
+  limit: number;
 }

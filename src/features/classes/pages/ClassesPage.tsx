@@ -11,6 +11,7 @@ import { Alert } from '../../../shared/components/ui/Alert';
 import { Spinner } from '../../../shared/components/ui/Spinner';
 import type { ClassEntity, Subject } from '../../../shared/types';
 import type { ClassFormValues } from '../schemas/class.chemas.ts';
+import toast from 'react-hot-toast';
 
 export default function ClassesPage() {
   const [classes, setClasses] = useState<ClassEntity[]>([]);
@@ -63,8 +64,10 @@ export default function ClassesPage() {
 
     if (editingClass) {
       await classesApi.update(editingClass.id, dto);
+      toast.success(`Клас "${values.name}" оновлено`);
     } else {
       await classesApi.create(dto);
+      toast.success(`Клас "${values.name}" створено`);
     }
 
     await fetchData();
@@ -75,6 +78,7 @@ export default function ClassesPage() {
     setDeleting(true);
     try {
       await classesApi.delete(deletingClass.id);
+      toast.success(`Клас "${deletingClass.name}" видалено`);
       setDeletingClass(null);
       await fetchData();
     } catch {

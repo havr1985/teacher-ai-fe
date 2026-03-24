@@ -12,6 +12,9 @@ const LoginPage = lazy(() => import('../../features/auth/pages/LoginPage'));
 const RegisterPage = lazy(
   () => import('../../features/auth/pages/RegisterPage'),
 );
+const VerifyEmailPage = lazy(
+  () => import('../../features/auth/pages/VerifyEmailPage'),
+);
 const DashboardPage = lazy(
   () => import('../../features/dashboard/pages/DashboardPage'),
 );
@@ -69,6 +72,14 @@ export const router = createBrowserRouter([
           </SuspenseWrap>
         </AuthLayout>
       </GuestRoute>
+    ),
+  },
+  {
+    path: '/verify-email',
+    element: (
+      <SuspenseWrap>
+        <VerifyEmailPage />
+      </SuspenseWrap>
     ),
   },
 

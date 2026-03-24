@@ -112,7 +112,6 @@ export default function CompetencyWorkDetailPage() {
           </h1>
           <p className="text-[15px] text-chalk-muted">
             {work.class?.name} · {grLabel}
-            {work.fromCache && ' · ⚡ Кешовано'}
           </p>
         </div>
 

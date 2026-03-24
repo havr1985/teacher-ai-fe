@@ -10,6 +10,7 @@ import { Card } from '../../../shared/components/ui/Card';
 import { Alert } from '../../../shared/components/ui/Alert';
 import { Spinner } from '../../../shared/components/ui/Spinner';
 import type { ClassEntity, CoveredTopic } from '../../../shared/types';
+import toast from 'react-hot-toast';
 
 export default function ClassTopicsPage() {
   const { classId } = useParams<{ classId: string }>();
@@ -51,6 +52,7 @@ export default function ClassTopicsPage() {
   const handleAddTopic = async (topic: string, date: string) => {
     if (!classId) return;
     await classesApi.addTopic(classId, { topic, coveredAt: date });
+    toast.success(`Тему "${topic}" додано`);
     await fetchData();
   };
 
@@ -59,6 +61,7 @@ export default function ClassTopicsPage() {
     setDeleting(true);
     try {
       await classesApi.deleteTopic(classId, deletingTopic.id);
+      toast.success('Тему видалено');
       setDeletingTopic(null);
       await fetchData();
     } catch {
