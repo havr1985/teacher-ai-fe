@@ -2,7 +2,9 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { lazy } from 'react';
 import { AppLayout } from '../../shared/components/layout/AppLayout';
 import { AuthLayout } from '../../features/auth/components/AuthLayout';
+import { AdminLayout } from '../../features/admin/components/AdminLayout';
 import { ProtectedRoute } from './ProtectedRoute';
+import { ProtectedAdminRoute } from './ProtectedAdminRoute';
 import { GuestRoute } from './GuestRoute';
 import { SuspenseWrap } from './SuspenseWrap';
 
@@ -43,6 +45,28 @@ const GenerateCompetencyWorkPage = lazy(
 const CompetencyWorkDetailPage = lazy(
   () =>
     import('../../features/competency-works/pages/CompetencyWorkDetailPage'),
+);
+
+// ─── Admin pages (named exports → wrapped for lazy) ───────────────────────────
+const AdminOverviewPage = lazy(() =>
+  import('../../features/admin/pages/AdminOverviewPage').then((m) => ({
+    default: m.AdminOverviewPage,
+  })),
+);
+const AdminUsersPage = lazy(() =>
+  import('../../features/admin/pages/AdminUsersPage').then((m) => ({
+    default: m.AdminUsersPage,
+  })),
+);
+const AdminStatsPage = lazy(() =>
+  import('../../features/admin/pages/AdminStatsPage').then((m) => ({
+    default: m.AdminStatsPage,
+  })),
+);
+const AdminSurveysPage = lazy(() =>
+  import('../../features/admin/pages/AdminSurveyPage').then((m) => ({
+    default: m.AdminSurveysPage,
+  })),
 );
 
 export const router = createBrowserRouter([
@@ -164,6 +188,50 @@ export const router = createBrowserRouter([
         element: (
           <SuspenseWrap>
             <CompetencyWorkDetailPage />
+          </SuspenseWrap>
+        ),
+      },
+    ],
+  },
+
+  // ─── Admin (role: admin only) ────────────────────────────────────────
+  {
+    path: '/admin',
+    element: (
+      <ProtectedAdminRoute>
+        <AdminLayout />
+      </ProtectedAdminRoute>
+    ),
+    children: [
+      {
+        index: true,
+        element: (
+          <SuspenseWrap>
+            <AdminOverviewPage />
+          </SuspenseWrap>
+        ),
+      },
+      {
+        path: 'users',
+        element: (
+          <SuspenseWrap>
+            <AdminUsersPage />
+          </SuspenseWrap>
+        ),
+      },
+      {
+        path: 'stats',
+        element: (
+          <SuspenseWrap>
+            <AdminStatsPage />
+          </SuspenseWrap>
+        ),
+      },
+      {
+        path: 'surveys',
+        element: (
+          <SuspenseWrap>
+            <AdminSurveysPage />
           </SuspenseWrap>
         ),
       },
