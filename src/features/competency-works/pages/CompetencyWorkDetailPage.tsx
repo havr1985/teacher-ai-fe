@@ -1,8 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import type { AxiosError } from 'axios';
+import toast from 'react-hot-toast';
 
 import { competencyWorksApi } from '../api/competencyWorksApi';
+import { authApi } from '../../auth/api/authApi';
+import { useAuthUpdateUser } from '../../auth/store/auth.selectors';
 import { CompetencyLevelBlock } from '../components/CompetencyLevelBlock';
+import { RegenerateModal } from '../components/RegenerateModal';
 import { ConfirmModal } from '../../../shared/components/ui/ConfirmModal';
 import { Card } from '../../../shared/components/ui/Card';
 import { Button } from '../../../shared/components/ui/Button';
@@ -16,6 +21,7 @@ export default function CompetencyWorkDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
+  const updateUser = useAuthUpdateUser();
 
   const workFromState = (location.state as { work?: CompetencyWork } | null)
     ?.work;
@@ -28,6 +34,10 @@ export default function CompetencyWorkDetailPage() {
   const [exporting, setExporting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+
+  // Regeneration state
+  const [showRegenerate, setShowRegenerate] = useState(false);
+  const [regenerating, setRegenerating] = useState(false);
 
   const fetchWork = useCallback(async () => {
     if (!id || workFromState) return;
@@ -69,6 +79,48 @@ export default function CompetencyWorkDetailPage() {
     } catch {
       setError('Не вдалося видалити роботу');
       setDeleting(false);
+    }
+  };
+
+  const handleRegenerate = async (notes?: string) => {
+    if (!id) return;
+    setRegenerating(true);
+    setError(null);
+
+    try {
+      const res = await competencyWorksApi.regenerate(id, notes);
+      const newWork = res.data.data;
+
+      // Refresh user balance
+      try {
+        const meRes = await authApi.me();
+        updateUser(meRes.data.data);
+      } catch {
+        /* non-critical */
+      }
+
+      toast.success('Новий варіант згенеровано');
+      setShowRegenerate(false);
+
+      // Navigate to the new work
+      navigate(`/competency-works/${newWork.id}`, {
+        state: { work: newWork },
+        replace: true,
+      });
+    } catch (err) {
+      const axiosErr = err as AxiosError<{ message: string | string[] }>;
+      const msg = axiosErr.response?.data?.message;
+
+      if (axiosErr.response?.status === 403) {
+        setError('Недостатньо генерацій. Поповніть баланс.');
+      } else {
+        setError(
+          Array.isArray(msg) ? msg[0] : (msg ?? 'Помилка перегенерації'),
+        );
+      }
+      setShowRegenerate(false);
+    } finally {
+      setRegenerating(false);
     }
   };
 
@@ -117,6 +169,13 @@ export default function CompetencyWorkDetailPage() {
 
         <div className="flex items-center gap-2 shrink-0">
           <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setShowRegenerate(true)}
+          >
+            🔄 Перегенерувати
+          </Button>
+          <Button
             variant="primary"
             size="sm"
             onClick={handleExport}
@@ -160,6 +219,14 @@ export default function CompetencyWorkDetailPage() {
           </p>
         </div>
       </Card>
+
+      {/* Modals */}
+      <RegenerateModal
+        open={showRegenerate}
+        onClose={() => setShowRegenerate(false)}
+        onConfirm={handleRegenerate}
+        loading={regenerating}
+      />
 
       <ConfirmModal
         open={confirmDelete}

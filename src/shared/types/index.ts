@@ -187,6 +187,32 @@ export interface GenerateCompetencyWorkDto {
   level3Count: number;
   forceNew?: boolean;
 }
+export interface BarChartData {
+  type: 'bar';
+  labels: string[];
+  values: number[];
+  unit?: string;
+  yLabel?: string;
+}
+
+export interface PieChartData {
+  type: 'pie';
+  segments: Array<{ label: string; value: number }>;
+  unit?: string;
+}
+
+export interface LineChartData {
+  type: 'line';
+  xLabel?: string;
+  yLabel?: string;
+  points: Array<{ x: string; y: number }>;
+  normalRange?: { min: number; max: number };
+}
+
+export interface TaskChart {
+  title: string;
+  data: BarChartData | PieChartData | LineChartData;
+}
 
 export interface CompetencyWorkTaskOpen {
   number: number;
@@ -194,6 +220,7 @@ export interface CompetencyWorkTaskOpen {
   type: 'open';
   scenario: string | null;
   image: { id: string | null; description: string } | null;
+  chart: TaskChart | null;
   questions: string[];
 }
 
@@ -203,6 +230,7 @@ export interface CompetencyWorkTaskChoice {
   type: 'choice';
   scenario: null;
   image: null;
+  chart: TaskChart | null;
   questions: Array<{ text: string; options: string[] }>;
 }
 
@@ -235,6 +263,7 @@ export interface CompetencyWork {
   fromCache?: boolean;
   class?: ClassEntity;
   subject?: Subject;
+  parentId: string | null;
 }
 
 // ─── Pagination ───────────────────────────────────────────────────────────────

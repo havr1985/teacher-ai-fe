@@ -22,6 +22,12 @@ export const competencyWorksApi = {
   generate: (dto: GenerateCompetencyWorkDto) =>
     api.post<ApiResponse<CompetencyWork>>('/competency-works/generate', dto),
 
+  regenerate: (id: string, notes?: string) =>
+    api.post<ApiResponse<CompetencyWork>>(
+      `/competency-works/${id}/regenerate`,
+      notes ? { notes } : {},
+    ),
+
   getAll: (params?: {
     classId?: string;
     gr?: string;
