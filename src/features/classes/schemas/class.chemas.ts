@@ -10,6 +10,7 @@ export const classFormSchema = z.object({
     .regex(/^\d{4}-\d{4}$/, 'Формат: 2025-2026'),
   level: z.enum(['standard', 'advanced', 'support']),
   teacherNotes: z.string().optional().or(z.literal('')),
+  textbook: z.string().optional().or(z.literal('')),
 });
 
 export type ClassFormValues = z.infer<typeof classFormSchema>;

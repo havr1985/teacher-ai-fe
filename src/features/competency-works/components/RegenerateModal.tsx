@@ -40,7 +40,7 @@ export function RegenerateModal({
       <ModalHeader title="Перегенерувати роботу" onClose={handleClose} />
       <ModalBody>
         <p className="text-sm text-chalk-muted mb-4">
-          Claude створить новий варіант з іншими сценаріями та завданнями.
+          AI створить новий варіант з іншими сценаріями та завданнями.
         </p>
 
         <div className="mb-3">

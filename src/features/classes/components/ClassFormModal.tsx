@@ -41,6 +41,29 @@ const LEVEL_OPTIONS = [
 
 const GRADE_OPTIONS = [5, 6, 7, 8, 9] as const;
 
+// ─── Textbook options per subject ────────────────────────────────────────────
+// Key: subject name (lowercase), Value: available textbooks
+// Empty array = no textbooks available for this subject yet
+const TEXTBOOK_OPTIONS: Record<
+  string,
+  Array<{ value: string; label: string }>
+> = {
+  біологія: [
+    { value: 'ostapchenko', label: 'Остапченко Л.І.' },
+    { value: 'matyash', label: 'Матяш Н.Ю.' },
+  ],
+  // Інші предмети — додамо пізніше
+  // 'хімія': [...],
+  // 'фізика': [...],
+};
+
+function getTextbookOptions(
+  subjectName: string | undefined,
+): Array<{ value: string; label: string }> {
+  if (!subjectName) return [];
+  return TEXTBOOK_OPTIONS[subjectName.toLowerCase()] ?? [];
+}
+
 export function ClassFormModal({
   open,
   onClose,
@@ -54,6 +77,7 @@ export function ClassFormModal({
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<ClassFormValues>({
     resolver: zodResolver(classFormSchema),
@@ -64,8 +88,13 @@ export function ClassFormModal({
       academicYear: getDefaultAcademicYear(),
       level: 'standard',
       teacherNotes: '',
+      textbook: '',
     },
   });
+
+  const selectedSubjectId = watch('subjectId');
+  const selectedSubject = subjects.find((s) => s.id === selectedSubjectId);
+  const textbookOptions = getTextbookOptions(selectedSubject?.name);
 
   useEffect(() => {
     if (!open) return;
@@ -78,6 +107,7 @@ export function ClassFormModal({
         academicYear: editingClass.academicYear,
         level: editingClass.level,
         teacherNotes: editingClass.teacherNotes ?? '',
+        textbook: editingClass.textbook ?? '',
       });
     } else {
       reset({
@@ -87,6 +117,7 @@ export function ClassFormModal({
         academicYear: getDefaultAcademicYear(),
         level: 'standard',
         teacherNotes: '',
+        textbook: '',
       });
     }
   }, [open, editingClass, subjects, reset]);
@@ -183,6 +214,30 @@ export function ClassFormModal({
               </FormField>
             </div>
 
+            {/* Textbook — shown only if subject has textbook options */}
+            {textbookOptions.length > 0 && (
+              <FormField
+                id="textbook"
+                label="Підручник"
+                error={errors.textbook?.message}
+              >
+                <Select
+                  id="textbook"
+                  error={!!errors.textbook}
+                  {...register('textbook')}
+                >
+                  <option value="">
+                    Загальна програма (без контексту підручника)
+                  </option>
+                  {textbookOptions.map(({ value, label }) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </Select>
+              </FormField>
+            )}
+
             <FormField
               id="teacherNotes"
               label="Примітки для AI (необов'язково)"
@@ -190,7 +245,7 @@ export function ClassFormModal({
             >
               <Textarea
                 id="teacherNotes"
-                placeholder="Наприклад: клас сильний, працюємо за підручником Остапченко..."
+                placeholder="Наприклад: клас сильний, потребує складніших завдань..."
                 rows={3}
                 error={!!errors.teacherNotes}
                 {...register('teacherNotes')}

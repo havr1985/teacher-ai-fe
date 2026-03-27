@@ -56,6 +56,7 @@ export interface ClassEntity {
   academicYear: string;
   level: ClassLevel;
   teacherNotes: string | null;
+  textbook: string | null;
   subject: {
     id: string;
     name: string;
